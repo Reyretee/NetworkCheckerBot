@@ -13,7 +13,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 def start_server(host, port, ping_handler, logger):
     server = ThreadedTCPServer((host, port), ThreadedTCPRequestHandler)
     server.ping_handler = ping_handler
-    logger.info(f"{host}:{port} takip ediliyor.")
+    logger.info(f"{host}:{port} üzerinden gelen veriler çekiliyor.")
 
     with server:
         server.serve_forever()
