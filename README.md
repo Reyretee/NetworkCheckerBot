@@ -32,10 +32,6 @@ Minecraft sunucunuzdan gelen ping verilerini botun dinlediği IP ve port'a gönd
 - **Loglama**: `utils/logger.py` dosyasını düzenleyerek loglama seviyesini ve formatını değiştirebilirsiniz.
 - **Sunucu Yönetimi**: `server.py` dosyasında sunucu yönetimi ile ilgili ek özellikler ekleyebilirsiniz.
 
-## Docker ile Çalıştırma
-
-Botu Docker ile çalıştırmak için aşağıdaki adımları izleyebilirsiniz:
-
 ## Lisans
 
 MIT Lisansı. Ayrıntılar için `LICENSE` dosyasına bakın.
