@@ -1,19 +1,25 @@
-import socketserver
+import asyncio
 from handlers.ping_handler import PingHandler
 
-class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
-    def handle(self):
-        data = self.request.recv(1024).strip().decode('utf-8')
-        self.server.ping_handler.process_ping_data(data)
+async def handle_client(reader, writer, ping_handler, logger):
+    try:
+        data = await reader.read(1024)
+        message = data.decode('utf-8')
+        ping_handler.process_ping_data(message)
+    except Exception as e:
+        logger.error(f"Veri işlenirken hata meydana geldi: {e}")
+    finally:
+        writer.close()
+        await writer.wait_closed()
+    
+async def start_async_server(host, port, ping_handler, logger):
+    server = await asyncio.start_server(
+        lambda r, w: handle_client(r, w, ping_handler, logger),
+        host, port
+    )
 
-class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    allow_reuse_address = True
+    addrs = ', '.join(str(sock.getsockname())for sock in server.sockets)
+    logger.info(f"{addrs} üzerinden gelen veriler izleniyor...")
 
-
-def start_server(host, port, ping_handler, logger):
-    server = ThreadedTCPServer((host, port), ThreadedTCPRequestHandler)
-    server.ping_handler = ping_handler
-    logger.info(f"{host}:{port} üzerinden gelen veriler çekiliyor.")
-
-    with server:
-        server.serve_forever()
+    async with server:
+        await server.serve_forever()
