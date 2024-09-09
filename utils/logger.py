@@ -1,26 +1,21 @@
 import logging
-from config.config import Config
+from logging.handlers import TimedRotatingFileHandler
 
 def setup_logger():
     logger = logging.getLogger("NetworkCheckerBot")
-    logger.setLevel(getattr(logging, Config.LOG_LEVEL.upper(), logging.INFO))
-
-
-    file_handler = logging.FileHandler(Config.LOG_FILE)
-    file_handler.setLevel(getattr(logging, Config.LOG_LEVEL.upper(), logging.INFO))
-
-
-    console = logging.StreamHandler()
-    console.setLevel(getattr(logging, Config.LOG_LEVEL.upper(), logging.INFO))
-
-
+    logger.setLevel(logging.INFO)
+    
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    
+    file_handler = TimedRotatingFileHandler("bot.log", when="midnight", interval=1, backupCount=7)
+    file_handler.setLevel(logging.INFO)
+    
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
     file_handler.setFormatter(formatter)
-    console.setFormatter(formatter)
-
-
+    
+    logger.addHandler(console_handler)
     logger.addHandler(file_handler)
-    logger.addHandler(console)
-
-
+    
     return logger

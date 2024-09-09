@@ -1,69 +1,36 @@
-import sqlite3
+from config.config import Config
+import mysql.connector
 import logging
 
 class PingHandler:
-    def __init__(self, logger, db_path='ping_data.db'):
+    def __init__(self, logger):
         self.logger = logger
-        self.db_path = db_path
-        self.setup_database()
+        self.db_connection = self.connect_to_db()
 
-    def setup_database(self):
+    def connect_to_db(self):
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            cursor.execute(
-                '''
-                CREATE TABLE IF NOT EXISTS ping_data (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    player TEXT NOT NULL,
-                    ping INTEGER NOT NULL,
-                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-                '''
+            conn = mysql.connector.connect(
+                host=Config.MYSQL_HOST,
+                user=Config.MYSQL_USER,
+                password=Config.MYSQL_PASSWORD,
+                database=Config.MYSQL_DATABASE
             )
-            conn.commit()
-            conn.close()
-            self.logger.info("Veritabanı kuruldu.")
-        except Exception as e:
-            self.logger.error(f"Veritabanı kurulumunda bir hata oluştu: {e}")
+            self.logger.info("MySQL veritabanına başarıyla bağlandı.")
+            return conn
+        except mysql.connector.Error as err:
+            self.logger.error(f"MySQL bağlantı hatası: {err}")
+            return None
 
-    def process_ping_data(self, data):
+    def save_to_database(self, player, ms):
+        if self.db_connection is None:
+            self.logger.error("Veritabanı bağlantısı yok.")
+            return
+
         try:
-            lines = data.strip().split('\n')
-            ping_data = []
-            for line in lines:
-                if ':' in line:
-                    player, ping = line.split(':', 1)
-                    ping_data.append((player.strip(), int(ping.strip())))
-                else:
-                    self.logger.warning(f"Geçersiz format: {line}")
-            
-            self.save_to_database(ping_data)
-            
-            self.logger.info("Gelen veriler:")
-            for player, ping in ping_data:
-                self.logger.info(f"{player}: {ping}ms")
-
-        except Exception as e:
-            self.logger.error(f"Ping verisi işlenemedi: {e}")
-
-    def save_to_database(self, ping_data):
-        try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            cursor.executemany(
-                '''
-                INSERT INTO ping_data (player, ping) VALUES (?, ?)
-                ''', ping_data
-            )
-            conn.commit()
-            conn.close()
-            self.logger.debug("Ping verileri kaydedildi.")
-        except sqlite3.Error as e:
-            self.logger.error(f"Veritabanına kayıt yapılırken bir hata oluştu: {str(e)}")
-
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger('NetworkCheckerBot')
-
-ping_handler = PingHandler(logger)
+            cursor = self.db_connection.cursor()
+            query = "INSERT INTO Aincrad (player, date, ms) VALUES (%s, UTC_TIMESTAMP(), %s)"
+            cursor.execute(query, (player, ms))
+            self.db_connection.commit()
+            self.logger.info(f"{player} verisi başarıyla kaydedildi.")
+        except mysql.connector.Error as err:
+            self.logger.error(f"Veritabanına kayıt yapılırken hata oluştu: {err}")
