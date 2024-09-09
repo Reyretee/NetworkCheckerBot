@@ -1,37 +1,59 @@
-# PingBot
+# NetworkCheckerBot
 
-Minecraft sunucusundan gelen oyuncu ping verilerini alan ve işleyen bir bot.
+NetworkCheckerBot is a Python bot that collects ping data from your Minecraft server and stores it in a MySQL database. This bot is used to monitor the performance of your Minecraft server and analyze network latency.
 
-## Özellikler
+## Features
 
-- TCP üzerinden veri alır.
-- Gelen verileri loglar ve SQLite veritabanına kaydeder.
-- Modüler yapısı sayesinde kolay genişletilebilir.
-- Hem senkron hem de asenkron sunucu desteği.
+- **Ping Data Collection**: Collects ping data from your Minecraft server.
+- **MySQL Database Integration**: Stores ping data in a MySQL database.
+- **Configuration File**: Easily configure IP address, port, and database information.
+- **Logging**: Logs bot activities and errors to `bot.log`.
+- **Asynchronous Operation**: Provides high efficiency using asynchronous programming.
 
-## Kurulum
+## Requirements
 
-1. **Python Yükleyin**: Python 3.7 veya üzeri sürüme sahip olun.
+- Python 3.8+
+- `mysql-connector-python` library
+- `asyncio` and other necessary libraries
 
+## Installation
 
-2. **Konfigürasyonu Ayarlayın**:
-    - `config/config.py` dosyasını açın ve gerekli ayarları yapın (HOST, PORT, LOG dosyası vb.).
+1. **Clone the Repository**:
+    ```bash
+    git clone https://github.com/username/NetworkCheckerBot.git
+    cd NetworkCheckerBot
+    ```
 
-3. **Botu Başlatın**:
+2. **Install Requirements**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3. **Edit the Config File**:
+    ```python
+    class Config:
+        SERVER_HOST = 'host_name'
+        SERVER_PORT = 25567
+        DB_HOST = 'your_ip'
+        DB_USER = 'your_username'
+        DB_PASS = 'your_password'
+        DB_NAME = 'database_name'
+    ```
+
+4. **Log File and Other Settings**:
+    ```bash
+    Check the log file name and log rotation settings in `utils/logger.py`.
+    ```
+
+## Usage
+
+1. **Start the Bot**:
     ```bash
     python main.py
     ```
 
-## Kullanım
+2. **Verify the Bot is Running**:
+    ```bash
+    1. Check the `bot.log` file to confirm that the bot has started and is collecting ping data.
+    ```
 
-Minecraft sunucunuzdan gelen ping verilerini botun dinlediği IP ve port'a gönderin. Bot, gelen verileri log dosyasına yazacak ve SQLite veritabanına kaydedecektir.
-
-## Geliştirme
-
-- **Veri İşleme**: `handlers/ping_handler.py` dosyasını düzenleyerek gelen veriler üzerinde ek işlemler yapabilirsiniz.
-- **Loglama**: `utils/logger.py` dosyasını düzenleyerek loglama seviyesini ve formatını değiştirebilirsiniz.
-- **Sunucu Yönetimi**: `server.py` dosyasında sunucu yönetimi ile ilgili ek özellikler ekleyebilirsiniz.
-
-## Lisans
-
-MIT Lisansı. Ayrıntılar için `LICENSE` dosyasına bakın.
