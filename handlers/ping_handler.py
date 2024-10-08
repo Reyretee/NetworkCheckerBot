@@ -1,6 +1,5 @@
 from config.config import Config
 import mysql.connector
-import logging
 
 class PingHandler:
     def __init__(self, logger):
@@ -20,6 +19,18 @@ class PingHandler:
         except mysql.connector.Error as err:
             self.logger.error(f"MySQL bağlantı hatası: {err}")
             return None
+        
+    def check_connection(self):
+        if self.db_connection is None:
+            self.logger.error("Veritabanı bağlantısı kurulamadı Yeniden deneniyor...")
+            self.db_connection = self.connect_to_db()
+
+        try:
+            self.db_connection.ping(reconnect=True, attempts=3, delay=5)
+            self.logger.info("Veritabanı bağlantısı aktif.")
+        except mysql.connector.Error as err:
+            self.logger.error(f"Veritabanına yeniden bağlanılamadı: {err}")
+            self.db_connection = None
 
     def save_to_database(self, player, ms):
         if self.db_connection is None:
@@ -27,10 +38,10 @@ class PingHandler:
             return
 
         try:
-            cursor = self.db_connection.cursor()
-            query = "INSERT INTO Aincrad (player, date, ms) VALUES (%s, UTC_TIMESTAMP(), %s)"
-            cursor.execute(query, (player, ms))
-            self.db_connection.commit()
-            self.logger.info(f"{player} verisi başarıyla kaydedildi.")
+            with self.db_connection.cursor() as cursor:
+                query = "INSERT INTO Aincrad (player, date, ms) VALUES (%s, UTC_TIMESTAMP(), %s)"
+                cursor.execute(query, (player, ms))
+                self.db_connection.commit()
+                self.logger.info(f"{player} verisi başarıyla kaydedildi.")
         except mysql.connector.Error as err:
             self.logger.error(f"Veritabanına kayıt yapılırken hata oluştu: {err}")
